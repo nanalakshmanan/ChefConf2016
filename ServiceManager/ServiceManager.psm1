@@ -24,11 +24,11 @@ class Service
   [Service] Get()
   {
       $Service = $this.GetService()
-      $ServiceWmiObject = $this.GetWmiService()
+      $ServiceWmiObject = $this.GetCimService()
 
       return @{
-		            StartupType  = [System.String]$ServiceWmiObject.StartMode
-		            Name         = [System.String]$this.Name 
+		            StartupType  = [System.String]($this.NormalizeStartupType($ServiceWmiObject.StartMode))
+		            Name         = [System.String]$service.Name
 		            DisplayName  = [System.String]$service.DisplayName
 		            State        = [System.String]$service.Status
 	            }
@@ -46,7 +46,7 @@ class Service
           return $false
       }
 
-      $ServiceWmiObject = $this.GetWmiService()
+      $ServiceWmiObject = $this.GetCimService()
 
       if (-not [string]::IsNullOrEmpty($($this.StartupType)))
       {
@@ -136,17 +136,27 @@ class Service
     .Synopsis
     Gets a Win32_Service object corresponding to the name
     #>
-    hidden [Management.ManagementObject] GetWmiService()
+    hidden [Microsoft.Management.Infrastructure.CimInstance] GetCimService()
     {
         try
         {
-            return Get-CimInstance -ClassName Win32_Service -Filter "Name='$Name'"
+            return Get-CimInstance -ClassName Win32_Service -Filter "Name='$($this.Name)'"
         }
         catch
         {
             Write-Verbose "Error retrieving win32_service information for $($this.Name)"
             throw
         }
+    }
+
+    <#
+    .Synopsis
+    Normalizes startup type 
+    #>
+    hidden [string] NormalizeStartupType([string]$StartupType)
+    {
+        if ($StartupType -ieq 'Auto') {return "Automatic"}
+        return $StartupType
     }
    
   #endregion Helper Methods
@@ -157,6 +167,34 @@ class Service
 
 function New-Service
 {
-    [Service]::new()
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0, Mandatory=$true)]
+        [string]
+        $Name,
+
+        [Parameter(Position=1)]
+        [string]
+        $State,
+
+        [Parameter(Position=2)]
+        [string]
+        $StartupType
+    )
+    $s = [Service]::new()
+    $s.Name = $Name
+
+    if ($PSBoundParameters.ContainsKey('State'))
+    {
+        $s.State = $State
+    }
+    if ($PSBoundParameters.ContainsKey('StartupType'))
+    {
+        $s.StartupType = $StartupType
+    }
+
+    return $s 
 } 
+
+
 #endregion Test Helpers
