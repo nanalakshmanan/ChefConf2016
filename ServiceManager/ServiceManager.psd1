@@ -51,7 +51,7 @@ Description = 'Test module containing a class based resource'
 # RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @('System.ServiceProcess.dll')
+# RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 # ScriptsToProcess = @()
@@ -66,7 +66,7 @@ RequiredAssemblies = @('System.ServiceProcess.dll')
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = '*'
+#FunctionsToExport = '*'
 
 # Cmdlets to export from this module
 CmdletsToExport = '*'
@@ -78,7 +78,7 @@ VariablesToExport = '*'
 AliasesToExport = '*'
 
 # DSC resources to export from this module
-DscResourcesToExport = @('Service')
+DscResourcesToExport = @('WindowsService')
 
 # List of all modules packaged with this module
 # ModuleList = @()

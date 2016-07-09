@@ -1,5 +1,5 @@
 [DSCResource()]
-class Service
+class WindowsService
 {
 
   #region Properties
@@ -21,7 +21,7 @@ class Service
   #endregion Properties
 
   #region DSC Methods
-  [Service] Get()
+  [WindowsService] Get()
   {
       $Service = $this.GetService()
       $ServiceWmiObject = $this.GetCimService()
@@ -120,7 +120,7 @@ class Service
     .Synopsis
     Gets a service corresponding to a name, throwing an error if not found
     #>
-    hidden [System.ServiceProcess.ServiceController] GetService()
+    hidden [object] GetService()
     {
         $svc=Get-Service $this.Name -ErrorAction Ignore
 
@@ -181,7 +181,7 @@ function New-Service
         [string]
         $StartupType
     )
-    $s = [Service]::new()
+    $s = [WindowsService]::new()
     $s.Name = $Name
 
     if ($PSBoundParameters.ContainsKey('State'))
