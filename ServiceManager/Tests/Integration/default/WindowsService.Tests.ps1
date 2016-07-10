@@ -1,12 +1,13 @@
-Describe 'WindowsService Integration Tests'
-{
+Describe 'WindowsService Integration Tests' {
+
+    $Name = 'wuauserv'
     It 'Test service state' {
-        $s = Get-Service 'wuauserv'    
-        $s.State -eq 'Stopped' | should be $true
+        $s = Get-Service $Name   
+        $s.Status -eq 'Stopped' | should be $true
     }
     
     It 'Test service startuptype' {
-        $s = Get-CimInstance -ClassName 'win32_service' -Filter 'Name="wuauserv"'
+        $s = Get-CimInstance -ClassName 'win32_service' -Filter "Name='$Name'"
         $s.StartMode -eq 'Manual' | should be $true
     }
 }
