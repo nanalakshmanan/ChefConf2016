@@ -4,6 +4,50 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
 $script:TestService = 'wuauserv'
 
+function Init-Service
+{
+    $global:Services = @{}
+    $WUService = @{Name='wuauserv';State='Stopped';StartupType='Manual'}
+    $global:Services += @{$WUService.Name = $WUService}
+}
+
+Describe -Name 'temp' -tags 'temp' -Fixture {
+    BeforeAll {Init-Service}
+    AfterAll {Init-Service}
+
+    Mock -ModuleName ServiceManager -CommandName Get-Service -MockWith {
+
+        #[CmdletBinding()]
+        #param([string]$Name)
+
+        if ($Global:Services.ContainsKey('wuauserv'))
+        {
+            return $Global:Services[$Name]
+        }
+    }
+
+    Mock -ModuleName ServiceManager -CommandName Get-CimInstance -MockWith {
+
+        [CmdletBinding()]
+        param(
+            [string]$ClassName,
+            [string]$Filter 
+        )
+
+        $Name = $Filter.split('=').split("`"")[2].Trim()
+        if ($Global:Services.ContainsKey($Name))
+        {
+            return $Global:Services[$Name]
+        }
+    }
+
+    It 'wuauserv is stopped'  {
+         $s = New-Service 'wuauserv' 'Stopped'
+         $s.Test() | should be $true
+         Assert-MockCalled -CommandName Get-Service -ModuleName ServiceManager 
+    }
+}
+
 Describe -Name 'Service Test() Tests' -Tags 'Test' -Fixture {
 
     BeforeAll {Set-Service $script:TestService -StartupType Manual; Stop-Service $script:TestService}
